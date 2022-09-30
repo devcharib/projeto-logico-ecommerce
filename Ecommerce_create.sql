@@ -2,6 +2,9 @@
 -- drop database ecommerce;
 create database ecommerce;
 use ecommerce;
+show tables;
+
+show databases;
 --
 create table supplier(
 	idSupplier int auto_increment primary key,
@@ -39,51 +42,60 @@ create table  productStorage(
     quantity int default 0    
 );
 -- alter table productStorage auto_increment=1;
+create table clients(
+	idClient int auto_increment primary key,
+    DataCadastro date not null
+);
+-- 
 create table orders(
 	idOrder int auto_increment primary key,
     idOrderClient int,
     orderStatus enum('Cancelado', 'Confirmado', 'Em processamento') default 'Em processamento',
     orderDescription varchar(255),
     sendValue float default 10,
-    paymentCash bool default false,
     constraint fk_orders_client foreign key (idOrderClient) references Clients(idClient)
 );
 -- alter table orders auto_increment=1;
  create table payments(
-    idPayment int,
+    idPayment int auto_increment primary key,
     totalValue double not null,
     statusPayment enum('Pendente', 'Processando', 'Realizado') default 'Pendente',
     idPaymentOrder int,
     constraint fk_payments_order foreign key (idPaymentOrder) references Orders(idOrder)
 );
 -- 
-create table clients(
-	idClient int auto_increment primary key,
-    DataCadastro date not null
+create table payForm(
+	idPayForm int auto_increment primary key,
+    typePayform enum('Cartão','Pix','Boleto')
 );
--- 
+--
 create table card(
 	idCard int auto_increment primary key,
     typeCard enum('Crédito','Débito') not null,
     numberCard varchar(20) not null,
     keyCard char(3),
     holder varchar(50) not null,
-    dateValidity date not null
+    dateValidity date not null,
+    idCardPF int,
+    constraint fk_card_payform foreign key (idCardPF) references payForm(idPayForm)
 );
 --
 create table pix(
 	idPix int auto_increment primary key,
     keyPix varchar(255) not null,
-    constraint unique_pix unique (keyPix)
+    idPixPF int,
+    constraint unique_pix unique (keyPix),
+    constraint fk_pix_payform foreign key (idPixPF) references payForm(idPayForm)
 );
 --
 create table boleto(
 	idBoleto int auto_increment primary key,
-    BoletoNumber varchar(255) not null,
-    Holder varchar(50) not null
+    boletoNumber varchar(255) not null,
+    holder varchar(50) not null,
+	idBoletoPF int,
+    constraint fk_boleto_payform foreign key (idBoletoPF) references payForm(idPayForm)
 );
 --
--- *******************************
 create table person(
 	idPerson int auto_increment primary key,
     CPF char(11) not null,
@@ -95,7 +107,7 @@ create table person(
     Address varchar(255),
     Contact varchar(50),
     idPersonClient int,
-    constraint fk_person_client foreign key (idPersonCliente) references clients(idClient),
+    constraint fk_person_client foreign key (idPersonClient) references clients(idClient),
     constraint unique_person unique (CPF)
 );
 --
@@ -106,19 +118,8 @@ create table company(
     Adress varchar(255),
     Contact varchar(50),
     idCompanyClient int,
-    constraint fk_company_client foreign key (idCompanyCliente) references clients(idClient),
+    constraint fk_company_client foreign key (idCompanyClient) references clients(idClient),
     constraint unique_company unique (CNPJ)
-);
---
-create table payForm(
-	idPayForm int auto_increment primary key,
-    typePayform enum('Cartão','Pix','Boleto'),
-    idPFCard int,
-    idPFPix int,
-    idPFBoleto int,
-    constraint fk_PayForm_Card foreign key (idPFCard) references card(idCard),
-    constraint fk_PayForm_Card foreign key (idPFPix) references pix(idPix),
-    constraint fk_PayForm_Card foreign key (idPFCBoleto) references boleto(idBoleto)
 );
 --
 create table paymentsFormsPay(
@@ -130,7 +131,7 @@ create table paymentsFormsPay(
 --
 create table delivery(
 	idDelivery int auto_increment primary key,
-    statusDelivery enum('','',''),
+    statusDelivery enum('Em separação', 'Em trânsito', 'Entregue') default 'Em separação',
     TrakingCode char(13) not null,
     idDeliveryPayment int,
     idDeliveryOrder int,
@@ -182,6 +183,3 @@ create table productSupplier(
     constraint fk_product_supplier_product foreign key (idPsProduct) references product(idProduct) 
 );
 --
-show tables;
-
-show databases;
