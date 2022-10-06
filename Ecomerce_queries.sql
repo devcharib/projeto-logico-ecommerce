@@ -10,6 +10,9 @@ select * from payments; -- totalValue, statusPayment
 select * from payform; -- typePayForm
 select * from paymentsformspay; -- idpfppay, idpfppayment
 select * from productorder; -- idPOproduct, idPOorder, poQuantity, poStatus
+select * from clientpay; -- idClientPayClient, idClientPayPayment
+select * from storageLocation;-- idLproduct, idLstorage, location
+desc storageLocation;
 desc productorder;
 -- perguntas
 -- SELECT
@@ -59,10 +62,62 @@ Select totalValue, typePayForm , count(*)
 From payments , paymentsformspay, payform
 Where idPayment = idPFPpayment and idPayForm = idPFPpayform
 Group by typePayForm, totalValue
-Having count(*);
+Having totalValue > 200;
 
--- JOIN complexas
+Select Sex, count(*)
+from Person
+where Sex = 'M'
+group by Sex
+having count(*) >2;
+-- JOIN 
+select pname, poQuantity ,category
+from product
+join productOrder on  idPOproduct = idProduct;
+
+select Pname , category
+from (product join storageLocation on idProduct = idLproduct)
+where location = 'RJ';
+
+select p.Pname, po.poQuantity, o.orderStatus, p.avaliacao
+from productOrder po inner join product p
+				on po.idPOproduct = p.idProduct
+			  inner join orders o
+				on po.idPOorder = o.idOrder
+where p.avaliacao >= 3;
+
 -- Pedidos por cliente / qntd
+
+-- select * from person; -- idPersonClient, Fname
+-- select * from orders; -- idOrder, idOrderClient
+-- select * from product; -- Pname, idProduct
+-- select * from productorder; -- poquantity, idPOorder, idpoproduct
+
+select p.Fname as Cliente, o.idorder as No_Pedido, pr.Pname as Produto, po.POquantity as Quantidade
+from person p
+join orders o on p.idPersonClient = o.idOrderClient
+join productOrder po on po.idPOorder = o.idOrder
+join product pr on po.idPOproduct = pr.idProduct;
+
+
+
 -- algum vendedor tambem e fornecedor
+-- select * from seller;
+-- select * from supplier;
+
+select distinct SocialName 
+from seller
+where CNPJ IN (select CNPJ
+				  from supplier);
+-- select CNPJ from supplier;
+-- select CNPJ from seller;
+
 -- fornecedores e produtos lista
--- 
+
+-- select * from supplier; -- idSupplier, socialName
+-- select * from productSupplier; -- idPsSupplier, idPsProduct
+-- select * from product; -- Pname, idProduct
+
+select s.SocialName, p.Pname, ps.quantity
+from productSupplier ps
+join supplier s on idSupplier = idPsSupplier
+join product p on idProduct = idPsProduct;
